@@ -1,0 +1,26 @@
+{
+  "name": "fullstackopen-node.js-y-express",
+  "version": "1.0.0",
+  "description": "curso de fullstackopen",
+  "keywords": [
+    "fullstack"
+  ],
+  "license": "ISC",
+  "author": "Sebastián Valencia",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon index.js",
+    "gen:requests": "node scripts/generate-requests.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "@flydotio/dockerfile": "^0.7.10",
+    "nodemon": "^3.1.14"
+  }
+}
