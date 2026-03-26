@@ -1,3 +1,17 @@
+## 🚀 App desplegada en Fly.io
+
+URL: https://fullstackopen-node-js-y-express.fly.dev/
+
+Esta aplicacion ya esta en produccion y disponible publicamente en la URL anterior.
+
+### sobre la plataforma (Fly.io)
+
+- Fly.io despliega aplicaciones en contenedores y las ejecuta en maquinas ligeras.
+- La app puede entrar en modo inactivo cuando no hay trafico (`auto_stop_machines = true`) para ahorrar recursos.
+- En el primer request despues de inactividad puede haber una pequena demora de arranque.
+- El despliegue se hace con `fly deploy` y los logs se revisan con `fly logs`.
+- Si usas estado en memoria, conviene mantener una sola maquina con `fly scale count 1` para evitar inconsistencias.
+
 ### iniciar app con nodemon
 node_modules/.bin/nodemon index.js 
 
@@ -6,6 +20,9 @@ npm start
 
 ### iniciar app con npm en modo desarrollo
 npm run dev
+
+### ejecutar script de Mongo con contraseña
+node mongo.js contraseña
 
 ### generar archivos de requests
 npm run gen:requests
@@ -96,7 +113,7 @@ fly scale count 1
 
 #### 6) diagnostico de conexion (WSL/Windows)
 
-Si se cuelga:
+Si se cuelga:find({}).then(result =>
 
 ```bash
 flyctl ping -o personal

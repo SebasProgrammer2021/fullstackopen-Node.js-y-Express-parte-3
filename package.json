@@ -1,7 +1,7 @@
 {
   "name": "fullstackopen-node.js-y-express",
   "version": "1.0.0",
-  "description": "curso de fullstackopen",
+  "description": "curso de fullstackopen, app de notas con Node.js, Express y MongoDB",
   "keywords": [
     "fullstack"
   ],
@@ -17,7 +17,8 @@
   },
   "dependencies": {
     "cors": "^2.8.6",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "mongoose": "^9.3.0"
   },
   "devDependencies": {
     "@flydotio/dockerfile": "^0.7.10",
