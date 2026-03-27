@@ -27,6 +27,68 @@ node mongo.js contraseña
 ### generar archivos de requests
 npm run gen:requests
 
+## levantar el repo con MongoDB (paso a paso)
+
+Esta app ahora puede conectarse a MongoDB desde `index.js` de dos formas:
+
+- Principal (actual): pasando la clave como argumento (`process.argv[2]`).
+- Opcional: usando la variable de entorno `MONGODB_URI`.
+
+### 1) instalar dependencias
+
+```bash
+npm install
+```
+
+### 2) configurar la cadena de conexion
+
+Formato esperado:
+
+```text
+mongodb+srv://USUARIO:CLAVE@cluster0.crexpey.mongodb.net/noteApp?appName=Cluster0
+```
+
+Opcion principal (sin variables de entorno):
+
+```bash
+npm run dev -- TU_CLAVE
+```
+
+Opcion opcional en Git Bash:
+
+```bash
+export MONGODB_URI="mongodb+srv://USUARIO:CLAVE@cluster0.crexpey.mongodb.net/noteApp?appName=Cluster0"
+npm run dev
+```
+
+Opcion opcional en PowerShell:
+
+```powershell
+$env:MONGODB_URI="mongodb+srv://USUARIO:CLAVE@cluster0.crexpey.mongodb.net/noteApp?appName=Cluster0"
+npm run dev
+```
+
+### 3) verificar que conecto bien
+
+En consola debe aparecer:
+
+```text
+Connected to MongoDB
+Server running on port 3001
+```
+
+Luego prueba:
+
+```bash
+curl http://localhost:3001/api/notes
+```
+
+### 4) nota importante
+
+- `mongo.js` se mantiene como archivo de referencia y pruebas manuales.
+- No se ejecuta automaticamente: solo corre si lanzas `node mongo.js ...`.
+- Nunca subas tu clave real a GitHub.
+
 ### despliegue en fly.io (resumen)
 
 - Fly.io puede pedir tarjeta de credito incluso en plan gratuito. Hay casos donde no la pide.

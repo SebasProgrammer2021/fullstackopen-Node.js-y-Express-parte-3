@@ -3,7 +3,28 @@ const cors = require('cors')
 const app = express();
 app.use(express.json());
 app.use(cors())
+const mongoose = require('mongoose')
 
+const password = process.argv[2]
+const mongoUriFromArg = password
+  ? `mongodb+srv://sebastianl_db_user:${password}@cluster0.crexpey.mongodb.net/noteApp?appName=Cluster0`
+  : null
+const MONGODB_URI = process.env.MONGODB_URI || mongoUriFromArg
+
+mongoose.set('strictQuery', false)
+
+if (!MONGODB_URI) {
+  console.warn('MongoDB URI missing. Set MONGODB_URI or pass the password as a CLI arg.')
+} else {
+  mongoose
+    .connect(MONGODB_URI, { family: 4 })
+    .then(() => {
+      console.log('Connected to MongoDB')
+    })
+    .catch(error => {
+      console.error('MongoDB connection error:', error.message)
+    })
+}
 
 let notes = [
   {
@@ -42,8 +63,29 @@ app.get('/', (request, response) => {
   response.send('<h1>Hello World!</h1>')
 })
 
+const noteSchema = new mongoose.Schema({
+  content: {
+    type: String,
+    required: true,
+  },
+  important: {
+    type: Boolean,
+    default: false,
+  },
+})
+
+const Note = mongoose.model('Note', noteSchema)
+
 app.get('/api/notes', (request, response) => {
-  response.json(notes)
+  // Primera ruta usando MongoDB
+  Note.find({})
+    .then(notes => {
+      response.json(notes)
+    })
+    .catch(error => {
+      response.status(500).json({ error: error.message })
+    })
+
 })
 
 app.get('/api/notes/:id', (request, response) => {
@@ -76,12 +118,12 @@ const generateId = () => {
 
 app.post('/api/notes', (request, response) => {
   const body = request.body
+
   //console.log(request.headers) imprime los headers de la petición, entre ellos el content-type
 
   if (!body || !body.content) {
     return response.status(400).json({ error: 'Content missing' })
   }
-
 
   const note = {
     id: generateId(), // se genera un nuevo id para la nota utilizando la función generateId, que calcula el id máximo actual y le suma 1.
@@ -97,7 +139,7 @@ app.post('/api/notes', (request, response) => {
 })
 
 
-app.use(unknownEndpoint) // este middleware se coloca después de definir las rutas, para que solo se ejecute si ninguna de las rutas anteriores coincide con la solicitud entrante. Si se coloca antes de las rutas, se ejecutaría para todas las solicitudes, incluso aquellas que sí coinciden con una ruta definida, lo que no es el comportamiento deseado.
+app.use(unknownEndpoint)
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
