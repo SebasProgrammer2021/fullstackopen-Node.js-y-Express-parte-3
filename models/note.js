@@ -1,14 +1,10 @@
-require('dotenv').config()
 const mongoose = require('mongoose')
 mongoose.set('strictQuery', false)
 
-const password = process.argv[2]
-const MONGODB_URI = password ? process.env.MONGODB_URI : null
-
-console.log('connecting to', MONGODB_URI)
+const MONGODB_URI = process.env.MONGODB_URI
 
 if (!MONGODB_URI) {
-  console.warn('MongoDB URI missing. Set MONGODB_URI or pass the password as a CLI arg.')
+  console.warn('MongoDB URI missing. Set MONGODB_URI in your environment or .env file.')
 } else {
   mongoose
     .connect(MONGODB_URI, { family: 4 }) // family: 4 forces the use of IPv4, which can help avoid certain connection issues.
