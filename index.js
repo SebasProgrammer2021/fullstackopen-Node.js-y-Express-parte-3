@@ -20,6 +20,19 @@ const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: 'unknown endpoint' })
 }
 
+// Ten en cuenta que el middleware de manejo de errores debe ser el último middleware cargado, también todas las rutas deben registrarse antes que el error-handler!
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
+
+  // si el error es un CastError, significa que el ID proporcionado no es válido, por ejemplo, si se intenta buscar una nota con un ID que no tiene el formato correcto de MongoDB (un ObjectId), se lanzará un CastError. En este caso, se responde con un código de estado 400 (Bad Request) y un mensaje de error indicando que el ID de la nota es inválido o mal formado.
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'ID de nota inválido, mal formado' })
+  }
+
+  // para otros tipos de errores, se responde con un código de estado 500 (Internal Server Error) y un mensaje de error genérico. Esto cubre cualquier otro error que pueda ocurrir en la aplicación, como errores de conexión a la base de datos, errores de validación, etc.
+  next(error)
+}
+
 app.use(requestLogger)
 
 // ruta raíz
@@ -41,7 +54,7 @@ app.get('/api/notes', (request, response) => {
 })
 
 // obtener una nota por id
-app.get('/api/notes/:id', (request, response) => {
+app.get('/api/notes/:id', (request, response, next) => {
   // const id = Number(request.params.id) //el parametro siempre viene en string y debe convertirse a número.
   // console.log(id)
   // const note = notes.find(note => note.id === id)
@@ -59,12 +72,18 @@ app.get('/api/notes/:id', (request, response) => {
   // FORMA 2 - usando MongoDB
   Note.findById(request.params.id).
     then(note => {
-      response.json(note)
+      if (note) {
+        response.json(note)
+      } else {
+        response.status(404).json({ message: "Nota no encontrada", status: 404 })
+      }
     })
-    .catch(error => {
-      console.error('Error consultando la nota por ID:', error.message)
-      response.status(500).json({ error: 'Error fetching note' })
-    })
+    // .catch(error => {
+    // forma 1 sin middleware de manejo de errores
+    // console.error('Error consultando la nota por ID:', error.message)
+    // response.status(400).json({ error: 'ID de nota inválido, mal formado' })
+    // })
+    .catch(error => next(error)) // forma 2 con middleware de manejo de errores, se pasa el error al siguiente middleware que lo maneja, en este caso el middleware de manejo de errores definido al final del archivo.
 })
 
 // eliminar una nota por id
@@ -129,8 +148,11 @@ app.post('/api/notes', (request, response) => {
 
 })
 
-
 app.use(unknownEndpoint)
+
+// este debe ser el último middleware cargado, ¡también todas las rutas deben ser registrada antes que esto!
+app.use(errorHandler)
+
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
