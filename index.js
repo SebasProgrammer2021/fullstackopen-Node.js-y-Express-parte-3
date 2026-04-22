@@ -87,18 +87,30 @@ app.get('/api/notes/:id', (request, response, next) => {
 })
 
 // eliminar una nota por id
-app.delete('/api/notes/:id', (request, response) => {
+app.delete('/api/notes/:id', (request, response, next) => {
   // const id = Number(request.params.id)
   // notes = notes.filter(note => note.id !== id)
 
   // response.status(204).end()
-  Note.deleteOne({ _id: request.params.id })
-    .then(() => {
-      response.status(204).end()
+  // Note.deleteOne({ _id: request.params.id })
+  //   .then(() => {
+  //     response.status(204).end()
+  //   })
+  //   .catch(error => {
+  //     console.error('Error deleting note:', error.message)
+  //     response.status(500).json({ error: 'Error deleting note' })
+  //   })
+
+  Note.findByIdAndDelete(request.params.id)
+    .then(result => {
+      if (result) {
+        response.status(204).end()
+      } else {
+        response.status(404).json({ message: "Nota no encontrada", status: 404 })
+      }
     })
     .catch(error => {
-      console.error('Error deleting note:', error.message)
-      response.status(500).json({ error: 'Error deleting note' })
+      next(error) // se pasa el error al middleware de manejo de errores para que lo maneje adecuadamente, en lugar de manejarlo directamente en esta función.
     })
 })
 
@@ -146,6 +158,24 @@ app.post('/api/notes', (request, response) => {
       response.status(500).json({ error: error.message })
     })
 
+})
+
+
+// actualizar una nota por id
+app.put('/api/notes/:id', (request, response, next) => {
+  const body = request.body
+
+  const note = {
+    content: body.content,
+    important: body.important,
+  }
+
+  //De forma predeterminada, el parámetro updatedNote del controlador de eventos recibe el documento original sin las modificaciones. Agregamos el parámetro opcional { new: true }, que hará que nuestro controlador de eventos sea llamado con el nuevo documento modificado en lugar del original.
+  Note.findByIdAndUpdate(request.params.id, note, { new: true })
+    .then(updatedNote => {
+      response.json(updatedNote)
+    })
+    .catch(error => next(error))
 })
 
 app.use(unknownEndpoint)
