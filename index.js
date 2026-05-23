@@ -4,34 +4,11 @@ const cors = require('cors')
 const app = express();
 const Note = require('./models/note');
 const { notes } = require('./burned-data');
+const unknownEndpoint = require('./middlewares/unknownEndpoint');
+const errorHandler = require('./middlewares/errorHandler');
+const requestLogger = require('./middlewares/requestLogger');
 app.use(express.json());
 app.use(cors())
-
-
-const requestLogger = (request, response, next) => {
-  console.log('Method:', request.method)
-  console.log('Path:  ', request.path)
-  console.log('Body:  ', request.body)
-  console.log('---')
-  next()
-}
-
-const unknownEndpoint = (request, response) => {
-  response.status(404).send({ error: 'unknown endpoint' })
-}
-
-// Ten en cuenta que el middleware de manejo de errores debe ser el último middleware cargado, también todas las rutas deben registrarse antes que el error-handler!
-const errorHandler = (error, request, response, next) => {
-  console.error(error.message)
-
-  // si el error es un CastError, significa que el ID proporcionado no es válido, por ejemplo, si se intenta buscar una nota con un ID que no tiene el formato correcto de MongoDB (un ObjectId), se lanzará un CastError. En este caso, se responde con un código de estado 400 (Bad Request) y un mensaje de error indicando que el ID de la nota es inválido o mal formado.
-  if (error.name === 'CastError') {
-    return response.status(400).send({ error: 'ID de nota inválido, mal formado' })
-  }
-
-  // para otros tipos de errores, se responde con un código de estado 500 (Internal Server Error) y un mensaje de error genérico. Esto cubre cualquier otro error que pueda ocurrir en la aplicación, como errores de conexión a la base de datos, errores de validación, etc.
-  next(error)
-}
 
 app.use(requestLogger)
 
@@ -122,7 +99,7 @@ const generateId = () => {
 }
 
 // crear una nueva nota
-app.post('/api/notes', (request, response) => {
+app.post('/api/notes', (request, response, next) => {
   const body = request.body
 
   //console.log(request.headers) imprime los headers de la petición, entre ellos el content-type
@@ -155,7 +132,7 @@ app.post('/api/notes', (request, response) => {
       response.json(savedNote)
     })
     .catch(error => {
-      response.status(500).json({ error: error.message })
+      next(error)
     })
 
 })
