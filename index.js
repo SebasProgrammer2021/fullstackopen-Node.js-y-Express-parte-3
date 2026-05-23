@@ -140,15 +140,16 @@ app.post('/api/notes', (request, response, next) => {
 
 // actualizar una nota por id
 app.put('/api/notes/:id', (request, response, next) => {
-  const body = request.body
-
-  const note = {
-    content: body.content,
-    important: body.important,
-  }
+  const { content, important } = request.body
 
   //De forma predeterminada, el parámetro updatedNote del controlador de eventos recibe el documento original sin las modificaciones. Agregamos el parámetro opcional { new: true }, que hará que nuestro controlador de eventos sea llamado con el nuevo documento modificado en lugar del original.
-  Note.findByIdAndUpdate(request.params.id, note, { new: true })
+
+  // con runValidators: true, se asegura que las validaciones definidas en el esquema de Mongoose para el modelo Note se apliquen también durante la actualización. Esto es importante para mantener la integridad de los datos, ya que garantiza que cualquier actualización de una nota cumpla con las reglas de validación establecidas en el esquema, como por ejemplo, que el campo content sea obligatorio y tenga una longitud mínima de 5 caracteres.
+  Note.findByIdAndUpdate(
+    request.params.id,
+    { content, important },
+    { new: true, runValidators: true, context: 'query' }
+  )
     .then(updatedNote => {
       response.json(updatedNote)
     })
